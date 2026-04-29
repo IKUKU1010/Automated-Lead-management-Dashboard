@@ -769,8 +769,83 @@ export default function App() {
   const nextSim = SIM[simIdx % SIM.length];
 
   return (
-    <div className="min-h-screen text-slate-100" style={{ background: "#060f0a", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="min-h-screen text-slate-100 relative" style={{ background: "#060f0a", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&display=swap" rel="stylesheet" />
+
+      {/* Forest background — fixed, behind everything */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        {/* Deep canopy gradient */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 120% 80% at 50% 0%, #0a2a16 0%, #060f0a 55%, #040a07 100%)"
+        }} />
+        {/* Ambient light from top — like sunlight through leaves */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]" style={{
+          background: "radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.07) 0%, transparent 70%)"
+        }} />
+        {/* Forest floor vignette */}
+        <div className="absolute bottom-0 inset-x-0 h-64" style={{
+          background: "linear-gradient(to top, rgba(2,8,5,0.8) 0%, transparent 100%)"
+        }} />
+        {/* SVG tree silhouettes */}
+        <svg className="absolute bottom-0 left-0 right-0 w-full opacity-[0.07]"
+          viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+          {/* Far background trees — shorter */}
+          <g fill="#34d399">
+            <polygon points="80,280 120,160 160,280"/>
+            <polygon points="100,280 120,180 140,280"/>
+            <polygon points="200,280 250,140 300,280"/>
+            <polygon points="220,280 250,160 280,280"/>
+            <polygon points="380,280 430,155 480,280"/>
+            <polygon points="560,280 600,145 640,280"/>
+            <polygon points="580,280 600,165 620,280"/>
+            <polygon points="700,280 755,138 810,280"/>
+            <polygon points="720,280 755,158 790,280"/>
+            <polygon points="880,280 930,148 980,280"/>
+            <polygon points="1060,280 1110,142 1160,280"/>
+            <polygon points="1080,280 1110,162 1140,280"/>
+            <polygon points="1240,280 1290,150 1340,280"/>
+            <polygon points="1380,280 1420,158 1460,280"/>
+          </g>
+          {/* Foreground trees — taller, darker */}
+          <g fill="#1a5c38" opacity="0.9">
+            <polygon points="0,320 60,120 120,320"/>
+            <polygon points="20,320 60,150 100,320"/>
+            <polygon points="160,320 230,95 300,320"/>
+            <polygon points="180,320 230,125 280,320"/>
+            <polygon points="320,320 390,100 460,320"/>
+            <polygon points="500,320 570,88 640,320"/>
+            <polygon points="520,320 570,118 620,320"/>
+            <polygon points="670,320 745,92 820,320"/>
+            <polygon points="690,320 745,122 800,320"/>
+            <polygon points="850,320 925,85 1000,320"/>
+            <polygon points="870,320 925,115 980,320"/>
+            <polygon points="1030,320 1100,96 1170,320"/>
+            <polygon points="1210,320 1280,90 1350,320"/>
+            <polygon points="1230,320 1280,120 1330,320"/>
+            <polygon points="1390,320 1440,102 1490,320"/>
+          </g>
+          {/* Trunks */}
+          <g fill="#0d3320" opacity="0.6">
+            <rect x="56" y="270" width="8" height="50"/>
+            <rect x="226" y="265" width="8" height="55"/>
+            <rect x="426" y="268" width="8" height="52"/>
+            <rect x="566" y="262" width="8" height="58"/>
+            <rect x="741" y="260" width="8" height="60"/>
+            <rect x="921" y="263" width="8" height="57"/>
+            <rect x="1096" y="264" width="8" height="56"/>
+            <rect x="1276" y="262" width="8" height="58"/>
+          </g>
+        </svg>
+                {/* Subtle noise/grain overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "128px"
+        }} />
+      </div>
+
+      {/* All content sits above the background */}
+      <div className="relative" style={{ zIndex: 1 }}>
 
       {/* Toast */}
       {toast && (
@@ -800,21 +875,36 @@ export default function App() {
             <span className="text-[10px]">📍</span> Cleveland · Columbus
           </div>
 
-          {/* Simulate button with explanation */}
-          <div className="flex items-center gap-2">
+          {/* Simulate button — block button with hover preview tooltip */}
+          <div className="relative group/sim">
             <button onClick={handleSimulate} disabled={simulating}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all
                 ${simulating
-                  ? "opacity-50 cursor-not-allowed border-slate-700/40 text-slate-500"
-                  : "border-sky-500/40 text-sky-300 hover:border-sky-400/60 hover:text-sky-200"}`}
-              style={{ background: simulating ? "transparent" : "#0a1e2a" }}>
+                  ? "opacity-50 cursor-not-allowed border-slate-700/40 text-slate-500 bg-transparent"
+                  : "border-sky-500/50 text-sky-200 hover:border-sky-400 hover:text-white"}`}
+              style={simulating ? {} : { background: "linear-gradient(135deg, #0a2030, #0d2a3a)" }}>
               {simulating
-                ? <><span className="animate-spin">⟳</span> Sending…</>
-                : <><span>＋</span> Simulate Lead</>}
+                ? <><span className="inline-block animate-spin">⟳</span><span>Simulating…</span></>
+                : <><span className="text-sky-400">⚡</span><span>Simulate Lead</span></>}
             </button>
+            {/* Hover tooltip */}
             {!simulating && (
-              <div className="hidden md:block text-[11px] text-slate-600 max-w-[160px] leading-tight">
-                Next: <span className="text-slate-500">{nextSim.label}</span>
+              <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-sky-500/20 shadow-2xl shadow-black/60 z-50
+                opacity-0 group-hover/sim:opacity-100 pointer-events-none transition-opacity duration-200"
+                style={{ background: "#0a1e2e" }}>
+                <div className="p-4">
+                  <div className="text-xs font-bold text-sky-300 mb-1">🧪 Simulate Inbound Lead</div>
+                  <div className="text-[11px] text-slate-400 leading-relaxed mb-3">
+                    Fires a realistic test lead through the full ingest pipeline — parsing, AI scoring, and response generation — exactly as a real customer enquiry would behave.
+                  </div>
+                  <div className="border-t border-sky-500/15 pt-3">
+                    <div className="text-[11px] text-slate-500 mb-1 font-medium">Next scenario:</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-sky-300 font-semibold">{nextSim.label}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-600 mt-1">Cycles through 4 scenarios · 5 unique contacts each</div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -864,11 +954,11 @@ export default function App() {
           </div>
         </div>
 
-        {/* Main two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4" style={{ minHeight: 600 }}>
+        {/* Main two-column layout — list grows freely, detail panel sticks to viewport */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
-          {/* Lead list */}
-          <div className="lg:col-span-2 flex flex-col gap-2 overflow-y-auto pr-1" style={{ maxHeight: 740 }}>
+          {/* Lead list — no max-height, grows with content */}
+          <div className="lg:col-span-2 flex flex-col gap-2">
             {filtered.length === 0 ? (
               <div className="text-center text-slate-600 py-16 text-sm">No leads in this category</div>
             ) : (
@@ -878,8 +968,8 @@ export default function App() {
             )}
           </div>
 
-          {/* Detail panel */}
-          <div className="lg:col-span-3 sticky top-24" style={{ maxHeight: 740 }}>
+          {/* Detail panel — sticky to viewport, scrolls internally */}
+          <div className="lg:col-span-3 sticky top-[72px]" style={{ height: "calc(100vh - 96px)" }}>
             {selected
               ? <LeadDetail
                   lead={selected}
@@ -890,8 +980,8 @@ export default function App() {
                 />
               : (
                 <div className="flex flex-col items-center justify-center h-full text-slate-600 text-sm gap-3 rounded-2xl border border-[#1a3a22]/40"
-                  style={{ background: "#0a1a12/60" }}>
-                  <div className="text-3xl opacity-30">🌲</div>
+                  style={{ background: "rgba(10,26,18,0.6)" }}>
+                  <div className="text-4xl opacity-20">🌲</div>
                   <div>Select a lead to view details</div>
                 </div>
               )
@@ -904,6 +994,7 @@ export default function App() {
           <span>Premier Tree Specialists LLC · Lead Intake Dashboard</span>
           <span>All leads persisted · Railway + SQLite</span>
         </div>
+      </div>
       </div>
     </div>
   );
