@@ -31,3 +31,45 @@ settings.patch("/", async (c) => {
 });
 
 export default settings;
+
+// ─── FAQ CRUD ─────────────────────────────────────────────────────────────────
+
+interface FaqRow { id: number; category: string; question: string; answer: string; keywords: string; }
+
+// GET all FAQ entries
+settings.get("/faq/all", (c) => {
+  const rows = db.prepare("SELECT * FROM faq ORDER BY id ASC").all();
+  return c.json(rows);
+});
+
+// POST — create new FAQ entry
+settings.post("/faq", async (c) => {
+  const body = await c.req.json<Omit<FaqRow, "id">>();
+  const result = db.prepare(
+    "INSERT INTO faq (category, question, answer, keywords) VALUES (?,?,?,?)"
+  ).run(body.category, body.question, body.answer, body.keywords ?? "");
+  return c.json({ ok: true, id: result.lastInsertRowid }, 201);
+});
+
+// PATCH — update existing FAQ entry by id
+settings.patch("/faq/:id", async (c) => {
+  const id   = Number(c.req.param("id"));
+  const body = await c.req.json<Partial<Omit<FaqRow, "id">>>();
+  const existing = db.prepare("SELECT * FROM faq WHERE id = ?").get(id) as FaqRow | undefined;
+  if (!existing) return c.json({ error: "Not found" }, 404);
+  db.prepare("UPDATE faq SET category=?, question=?, answer=?, keywords=? WHERE id=?").run(
+    body.category ?? existing.category,
+    body.question ?? existing.question,
+    body.answer   ?? existing.answer,
+    body.keywords ?? existing.keywords,
+    id
+  );
+  return c.json({ ok: true });
+});
+
+// DELETE — remove FAQ entry by id
+settings.delete("/faq/:id", (c) => {
+  const id = Number(c.req.param("id"));
+  db.prepare("DELETE FROM faq WHERE id = ?").run(id);
+  return c.json({ ok: true });
+});

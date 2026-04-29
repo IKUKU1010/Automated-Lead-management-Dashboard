@@ -332,6 +332,261 @@ function ScoringSettings({ s, set }) {
   );
 }
 
+
+// ─── FAQ SECTION ──────────────────────────────────────────────────────────────
+
+const CATEGORY_OPTIONS = [
+  { value: "oak_season",   label: "Oak Season" },
+  { value: "service_area", label: "Service Area" },
+  { value: "emergency",    label: "Emergency" },
+  { value: "credentials",  label: "Credentials" },
+  { value: "pricing",      label: "Pricing" },
+  { value: "scheduling",   label: "Scheduling" },
+  { value: "stump",        label: "Stump Grinding" },
+  { value: "plant_health", label: "Plant Health" },
+  { value: "columbus",     label: "Columbus" },
+  { value: "custom",       label: "Custom" },
+];
+
+const CATEGORY_COLOUR = {
+  oak_season:   "text-amber-300  border-amber-500/20  bg-amber-500/8",
+  service_area: "text-sky-300    border-sky-500/20    bg-sky-500/8",
+  emergency:    "text-red-300    border-red-500/20    bg-red-500/8",
+  credentials:  "text-violet-300 border-violet-500/20 bg-violet-500/8",
+  pricing:      "text-emerald-300 border-emerald-500/20 bg-emerald-500/8",
+  scheduling:   "text-blue-300   border-blue-500/20   bg-blue-500/8",
+  stump:        "text-lime-300   border-lime-500/20   bg-lime-500/8",
+  plant_health: "text-teal-300   border-teal-500/20   bg-teal-500/8",
+  columbus:     "text-orange-300 border-orange-500/20 bg-orange-500/8",
+  custom:       "text-slate-300  border-slate-500/20  bg-slate-500/8",
+};
+
+function FaqEditor({ entry, onSave, onDelete, isNew, onCancel }) {
+  const [draft, setDraft] = useState({ ...entry });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setDraft(d => ({ ...d, [k]: v }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-emerald-500/30 p-4 space-y-3"
+      style={{ background: "#0d2a1e" }}>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Category">
+          <select value={draft.category} onChange={e => set("category", e.target.value)}
+            className="w-full px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
+            style={{ background: "#0d2018" }}>
+            {CATEGORY_OPTIONS.map(o => (
+              <option key={o.value} value={o.value} style={{ background: "#0d2018" }}>{o.label}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Keywords (comma-separated)" hint="Used for confidence scoring.">
+          <Input value={draft.keywords} onChange={v => set("keywords", v)} mono />
+        </Field>
+      </div>
+      <Field label="Question">
+        <Input value={draft.question} onChange={v => set("question", v)} placeholder="e.g. Can you trim my oak tree?" />
+      </Field>
+      <Field label="Answer" hint="This text is injected into the AI prompt as context when this category is matched.">
+        <Textarea value={draft.answer} onChange={v => set("answer", v)} rows={4} />
+      </Field>
+      <div className="flex gap-2 pt-1">
+        <button onClick={handleSave} disabled={saving}
+          className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-200 transition-all hover:border-emerald-400"
+          style={{ background: "#0d3a22" }}>
+          {saving ? "Saving…" : isNew ? "Add entry" : "Save changes"}
+        </button>
+        {isNew && (
+          <button onClick={onCancel}
+            className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-700/40 text-slate-400 hover:text-slate-300 transition-colors">
+            Cancel
+          </button>
+        )}
+        {!isNew && (
+          <button onClick={() => onDelete(entry.id)}
+            className="ml-auto px-4 py-2 rounded-xl text-xs font-semibold border border-red-500/20 text-red-400 hover:border-red-500/40 transition-colors">
+            Delete
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FAQSettings() {
+  const [entries, setEntries]     = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [adding, setAdding]       = useState(false);
+  const [editing, setEditing]     = useState(null); // id of entry being edited
+  const [toast, setToast]         = useState(null);
+  const [search, setSearch]       = useState("");
+
+  const showToast = (msg, ok = true) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const load = async () => {
+    try {
+      const res = await fetch("/api/settings/faq/all");
+      setEntries(await res.json());
+    } catch { showToast("Failed to load FAQ", false); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleSave = async (draft) => {
+    try {
+      if (draft.id) {
+        await fetch(`/api/settings/faq/${draft.id}`, {
+          method: "PATCH", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(draft),
+        });
+        setEntries(es => es.map(e => e.id === draft.id ? draft : e));
+        setEditing(null);
+        showToast("Entry updated");
+      } else {
+        const res = await fetch("/api/settings/faq", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(draft),
+        });
+        const { id } = await res.json();
+        setEntries(es => [...es, { ...draft, id }]);
+        setAdding(false);
+        showToast("Entry added");
+      }
+    } catch { showToast("Save failed", false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this FAQ entry? This will affect confidence scoring and AI responses.")) return;
+    try {
+      await fetch(`/api/settings/faq/${id}`, { method: "DELETE" });
+      setEntries(es => es.filter(e => e.id !== id));
+      setEditing(null);
+      showToast("Entry deleted");
+    } catch { showToast("Delete failed", false); }
+  };
+
+  const filtered = entries.filter(e =>
+    !search ||
+    e.question.toLowerCase().includes(search.toLowerCase()) ||
+    e.category.toLowerCase().includes(search.toLowerCase()) ||
+    e.keywords.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const blankEntry = { category: "custom", question: "", answer: "", keywords: "" };
+
+  return (
+    <div>
+      {/* Toast */}
+      {toast && (
+        <div className={`mb-4 px-4 py-2.5 rounded-xl text-xs font-semibold border
+          ${toast.ok ? "bg-emerald-900/60 border-emerald-500/30 text-emerald-200" : "bg-red-900/60 border-red-500/30 text-red-200"}`}>
+          {toast.ok ? "✓" : "✗"} {toast.msg}
+        </div>
+      )}
+
+      <Card
+        title="FAQ Knowledge Base"
+        subtitle="These entries power the AI context and confidence scoring. Each category has a keyword list — leads matching those keywords get scored against this answer.">
+
+        {/* Explanation banner */}
+        <div className="p-3 rounded-lg border border-sky-500/15 text-[11px] text-slate-400 leading-relaxed space-y-1"
+          style={{ background: "#08121a" }}>
+          <div className="font-semibold text-slate-300 mb-1">How the FAQ affects the system</div>
+          <div>📊 <span className="text-slate-300">Confidence scoring</span> — each time a lead message matches a category's keywords, the score increases by the FAQ match points (currently {30} per match).</div>
+          <div>🤖 <span className="text-slate-300">AI responses</span> — the full question and answer for every matched category is injected into the AI system prompt as context before generating a reply.</div>
+          <div>✏️ <span className="text-slate-300">Editing</span> — changes to answers take effect immediately on the next inbound lead. Changes to keywords affect scoring from the next lead onward.</div>
+        </div>
+
+        {/* Search + add */}
+        <div className="flex gap-3 items-center">
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search by category, question, or keyword…"
+            className="flex-1 px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
+            style={{ background: "#0d2018" }} />
+          <button onClick={() => { setAdding(true); setEditing(null); }}
+            disabled={adding}
+            className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-200 hover:border-emerald-400 transition-all flex-shrink-0"
+            style={{ background: "#0d3a22" }}>
+            + Add entry
+          </button>
+        </div>
+
+        {/* New entry form */}
+        {adding && (
+          <FaqEditor
+            entry={blankEntry}
+            onSave={handleSave}
+            onDelete={() => {}}
+            isNew
+            onCancel={() => setAdding(false)}
+          />
+        )}
+
+        {/* Entry list */}
+        {loading ? (
+          <div className="text-center text-slate-600 text-sm py-8 animate-pulse">Loading…</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center text-slate-600 text-sm py-8">No entries found</div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map(entry => {
+              const colourClass = CATEGORY_COLOUR[entry.category] || CATEGORY_COLOUR["custom"];
+              const isEditingThis = editing === entry.id;
+
+              return (
+                <div key={entry.id}>
+                  {isEditingThis ? (
+                    <FaqEditor
+                      entry={entry}
+                      onSave={handleSave}
+                      onDelete={handleDelete}
+                      isNew={false}
+                      onCancel={() => setEditing(null)}
+                    />
+                  ) : (
+                    <div
+                      onClick={() => { setEditing(entry.id); setAdding(false); }}
+                      className="group rounded-xl border border-[#1e3a2a]/50 p-4 cursor-pointer hover:border-[#2d5a3a]/60 transition-all"
+                      style={{ background: "#0d2018" }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${colourClass}`}>
+                              {CATEGORY_OPTIONS.find(o => o.value === entry.category)?.label || entry.category}
+                            </span>
+                            {entry.keywords && (
+                              <span className="text-[10px] text-slate-600 font-mono truncate max-w-[240px]">
+                                {entry.keywords}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm font-semibold text-slate-200 mb-1">{entry.question}</div>
+                          <div className="text-xs text-slate-500 leading-relaxed line-clamp-2">{entry.answer}</div>
+                        </div>
+                        <span className="text-[11px] text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0 mt-0.5">
+                          Edit ↗
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
 // ─── MAIN SETTINGS PAGE ───────────────────────────────────────────────────────
 
 export default function Settings({ onBack }) {
@@ -350,6 +605,7 @@ export default function Settings({ onBack }) {
     { key: "rules",     label: "Business Rules",  icon: "⚙️" },
     { key: "ai",        label: "AI & Prompts",    icon: "🤖" },
     { key: "scoring",   label: "Scoring",         icon: "📊" },
+    { key: "faq",       label: "FAQ Knowledge",   icon: "📚" },
   ];
 
   if (loading) return (
