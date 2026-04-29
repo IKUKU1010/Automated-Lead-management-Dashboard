@@ -106,15 +106,32 @@ app.get("/admin", (c) => {
 });
 
 // ─── STATIC FRONTEND ──────────────────────────────────────────────────────────
+// In local dev, ./public doesn't exist because Vite runs separately on port 5173.
+// Only serve static files when the production build is present (Railway).
 
-app.use("/assets/*", serveStatic({ root: "./public" }));
-app.get("/tree.svg",  serveStatic({ root: "./public" }));
+import { existsSync } from "fs";
+const PUBLIC_BUILT = existsSync("./public/index.html");
 
-// SPA fallback — serve index.html for all non-API routes
-app.get("*", async (c) => {
-  if (c.req.path.startsWith("/api")) return c.json({ error: "Not found" }, 404);
-  return serveStatic({ path: "./public/index.html" })(c, async () => {});
-});
+if (PUBLIC_BUILT) {
+  app.use("/assets/*", serveStatic({ root: "./public" }));
+  app.get("/tree.svg",  serveStatic({ root: "./public" }));
+  app.get("*", async (c) => {
+    if (c.req.path.startsWith("/api")) return c.json({ error: "Not found" }, 404);
+    return serveStatic({ path: "./public/index.html" })(c, async () => {});
+  });
+} else {
+  // Dev fallback — helpful redirect page
+  app.get("*", (c) => {
+    if (c.req.path.startsWith("/api") || c.req.path.startsWith("/admin"))
+      return c.json({ error: "Not found" }, 404);
+    return c.html(`<!DOCTYPE html><html><body style="font:14px system-ui;background:#060f0a;color:#94a3b8;padding:40px;font-family:system-ui">
+      <h2 style="color:#4ade80;margin-bottom:8px">\u{1F332} Premier Tree — Backend running</h2>
+      <p>Frontend is served by Vite in dev mode.</p>
+      <p>Open <a href="http://localhost:5173" style="color:#38bdf8">http://localhost:5173</a> for the dashboard.</p>
+      <p style="margin-top:16px"><a href="/admin" style="color:#38bdf8">Admin panel \u2192</a></p>
+    </body></html>`);
+  });
+}
 
 // ─── START ────────────────────────────────────────────────────────────────────
 
