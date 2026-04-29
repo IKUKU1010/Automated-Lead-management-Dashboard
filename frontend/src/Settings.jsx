@@ -434,9 +434,22 @@ function FAQSettings() {
   const load = async () => {
     try {
       const res = await fetch("/api/settings/faq/all");
-      setEntries(await res.json());
-    } catch { showToast("Failed to load FAQ", false); }
-    finally { setLoading(false); }
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("FAQ fetch failed:", res.status, text);
+        showToast(`API error ${res.status} — check console`, false);
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      console.log("FAQ loaded:", data.length, "entries");
+      setEntries(data);
+    } catch (err) {
+      console.error("FAQ fetch exception:", err);
+      showToast("Failed to load FAQ — check console", false);
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { load(); }, []);
 
@@ -656,6 +669,7 @@ export default function Settings({ onBack }) {
       {activeSection === "rules"     && <BusinessRules     s={local} set={set} />}
       {activeSection === "ai"        && <AISettings        s={local} set={set} />}
       {activeSection === "scoring"   && <ScoringSettings   s={local} set={set} />}
+      {activeSection === "faq"       && <FAQSettings />}
 
       <SaveBar saving={saving} saved={saved} onSave={handleSave} />
     </div>
