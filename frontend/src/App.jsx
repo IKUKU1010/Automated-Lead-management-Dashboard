@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Settings from "./Settings.jsx";
 
 // ─── MOCK DATA (fallback for local dev without backend) ───────────────────────
 
@@ -597,6 +598,7 @@ export default function App() {
   const [simulating, setSim]        = useState(false);
   const [loading, setLoading]       = useState(true);
   const [simIdx, setSimIdx]         = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -909,6 +911,16 @@ export default function App() {
             )}
           </div>
 
+          {/* Settings button */}
+          <button onClick={() => setShowSettings(s => !s)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all
+              ${showSettings
+                ? "border-emerald-500/60 text-emerald-300"
+                : "border-[#1a3a22]/60 text-slate-500 hover:text-slate-300 hover:border-[#2d5a3a]/60"}`}
+            style={{ background: showSettings ? "#0d2a1e" : "#0a1a12" }}>
+            ⚙️ Settings
+          </button>
+
           {/* Live indicator */}
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -918,6 +930,11 @@ export default function App() {
       </header>
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 py-6">
+        {showSettings && (
+          <Settings onBack={() => setShowSettings(false)} />
+        )}
+        {!showSettings && (
+        <div>
 
         {/* Stats */}
         <StatsBar leads={leads} />
@@ -994,6 +1011,8 @@ export default function App() {
           <span>Premier Tree Specialists LLC · Lead Intake Dashboard</span>
           <span>All leads persisted · Railway + SQLite</span>
         </div>
+        </div>
+        )}
       </div>
       </div>
     </div>

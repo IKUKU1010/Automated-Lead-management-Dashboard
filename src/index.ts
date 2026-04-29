@@ -4,8 +4,9 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import leadsRouter  from "./routes/leads.js";
-import respondRouter from "./routes/respond.js";
+import leadsRouter    from "./routes/leads.js";
+import respondRouter  from "./routes/respond.js";
+import settingsRouter from "./routes/settings.js";
 import db, { seedLeads } from "./db.js";
 
 const app = new Hono();
@@ -27,8 +28,9 @@ app.use("*", async (c, next) => {
 
 // ─── API ROUTES ───────────────────────────────────────────────────────────────
 
-app.route("/api/leads",   leadsRouter);
-app.route("/api/respond", respondRouter);
+app.route("/api/leads",    leadsRouter);
+app.route("/api/respond",  respondRouter);
+app.route("/api/settings", settingsRouter);
 
 app.get("/api/health", (c) =>
   c.json({ status: "ok", timestamp: new Date().toISOString(), env: process.env.NODE_ENV ?? "development" })

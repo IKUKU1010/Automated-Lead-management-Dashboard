@@ -65,6 +65,12 @@ db.exec(`
     note       TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 // Seed mock leads — INSERT OR IGNORE is safe to run every boot.
@@ -173,6 +179,83 @@ if (faqCount === 0) {
     ["columbus", "Do you serve Columbus?", "Yes — we opened our Columbus location in October 2025, serving all of Central Ohio including Westerville, Delaware, Dublin, Grove City, and surrounding areas. Call 614-526-2266 for our Columbus team.", "columbus,central ohio,westerville,delaware,dublin,franklin county"],
   ];
   for (const faq of faqs) insert.run(...faq);
+}
+
+// ─── SEED SETTINGS ───────────────────────────────────────────────────────────
+// All business rules, thresholds, and config live here.
+// INSERT OR IGNORE — never overwrites values Matt has already edited.
+export function seedSettings() {
+  const set = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?,?)");
+  const defaults: [string, string][] = [
+
+    // ── Outreach ─────────────────────────────────────────────────────────────
+    ["outreach.text_enabled",     "true"],
+    ["outreach.email_enabled",    "true"],
+    ["outreach.auto_send_threshold", "80"],   // confidence % required to auto-send
+    ["outreach.response_delay_ms",   "0"],    // ms to wait before sending (0 = instant)
+    ["outreach.from_name",        "Premier Tree Specialists"],
+    ["outreach.from_email",       "customerservice@premiertreesllc.com"],
+    ["outreach.cleveland_phone",  "216-245-8908"],
+    ["outreach.columbus_phone",   "614-526-2266"],
+    ["outreach.signature",        "Premier Tree Specialists | Cleveland: 216-245-8908 | Columbus: 614-526-2266"],
+
+    // ── Inbound channels ─────────────────────────────────────────────────────
+    ["inbound.google_lsa_enabled",    "true"],
+    ["inbound.website_form_enabled",  "true"],
+    ["inbound.answerforce_enabled",   "true"],
+    ["inbound.google_lsa_route",      "auto"],      // auto | review | disabled
+    ["inbound.website_form_route",    "auto"],
+    ["inbound.answerforce_route",     "auto"],
+
+    // ── Confidence & scoring ──────────────────────────────────────────────────
+    ["scoring.auto_send_threshold",  "80"],
+    ["scoring.review_threshold",     "50"],   // below this = flagged, no response
+    ["scoring.field_score_per_item", "5"],    // points per present field (name/phone/email/location)
+    ["scoring.faq_score_per_match",  "30"],   // points per FAQ category matched
+
+    // ── Business rules ────────────────────────────────────────────────────────
+    ["rules.emergency_keywords",
+      "emergency,fallen,house,lawsuit,complaint,bad experience,dangerous,collapse,on my roof,hit the roof,through the roof"],
+    ["rules.oak_season_start_month", "4"],    // April (1-indexed)
+    ["rules.oak_season_end_month",   "10"],   // October
+    ["rules.oak_trim_restricted",    "true"],
+    ["rules.oak_season_message",
+      "Important: oak trimming season in Ohio is closed April–October to prevent oak wilt disease. We schedule oak trimming November–March only."],
+
+    // ── Service area ──────────────────────────────────────────────────────────
+    ["service_area.zip_prefixes",
+      "440,441,442,443,444,445,446,447,448,449,430,431,432,433,434,435,436,437,438,439"],
+    ["service_area.description",
+      "Northeast Ohio (Cuyahoga, Geauga, Lake, Lorain, Medina, Portage, Summit) and Central Ohio (Delaware, Fairfield, Franklin, Licking, Madison, Pickaway, Union)"],
+
+    // ── AI / prompt settings ─────────────────────────────────────────────────
+    ["ai.model",       "anthropic/claude-sonnet-4-20250514"],
+    ["ai.max_tokens",  "400"],
+    ["ai.temperature", "0.4"],
+    ["ai.system_prompt",
+      `You are a warm, knowledgeable customer service representative for Premier Tree Specialists — an Ohio tree care company with ISA-certified arborists and 80+ years of combined experience.
+
+RULES:
+1. NEVER quote specific prices — always offer a free on-site estimate
+2. Oak trees cannot be trimmed April–October due to oak wilt disease risk — always mention this if oak trimming is requested
+3. Always address the customer by their first name
+4. Reference the correct office phone number based on their location
+5. Keep responses to 3–5 sentences — warm and professional, never salesy
+6. Do NOT use phrases like "Certainly!", "Absolutely!", "Great question!"
+7. Do NOT make promises you cannot keep
+8. Sign off every message with the company signature`],
+    ["ai.extraction_prompt",
+      "Extract the following fields from this customer message: name, phone, email, address, city, zip, service type (Tree Trimming / Tree Removal / Stump Grinding / Plant Health Care / Arborist Consultation / Emergency Service), urgency (standard / urgent), and a 1-sentence scope of work. Return as JSON."],
+  ];
+  const tx = db.transaction((items: [string,string][]) => { for (const [k,v] of items) set.run(k, v); });
+  tx(defaults);
+}
+seedSettings();
+
+// ── Helper: read a setting value at runtime ───────────────────────────────────
+export function getSetting(key: string, fallback = ""): string {
+  const row = db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
+  return row?.value ?? fallback;
 }
 
 export default db;

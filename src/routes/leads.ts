@@ -1,24 +1,19 @@
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
-import db from "../db.js";
+import db, { getSetting } from "../db.js";
 import { generateResponse } from "../services/ai.js";
 import { getArboStarPayloadPreview } from "../services/arbostar.js";
 
 const leads = new Hono();
 
-// ─── SERVICE AREA ─────────────────────────────────────────────────────────────
-
-// Ohio zip code prefixes for NE + Central Ohio
-const SERVICE_AREA_PREFIXES = [
-  // Northeast Ohio
-  "440","441","442","443","444","445","446","447","448","449",
-  // Central Ohio
-  "430","431","432","433","434","435","436","437","438","439",
-];
+// ─── SERVICE AREA — reads from settings table at runtime ──────────────────────
 
 function isInServiceArea(zip: string): boolean {
   if (!zip) return false;
-  return SERVICE_AREA_PREFIXES.some(p => zip.startsWith(p));
+  const prefixes = getSetting("service_area.zip_prefixes",
+    "440,441,442,443,444,445,446,447,448,449,430,431,432,433,434,435,436,437,438,439"
+  ).split(",").map(p => p.trim());
+  return prefixes.some(p => zip.startsWith(p));
 }
 
 // ─── PARSE HELPERS ───────────────────────────────────────────────────────────
@@ -104,7 +99,8 @@ leads.post("/ingest/form", async (c) => {
   };
 
   const ai = await generateResponse(leadData, rawMessage);
-  const autoSend = ai.confidence >= 80 && leadData.inServiceArea;
+  const threshold = parseInt(getSetting('scoring.auto_send_threshold', '80'), 10);
+  const autoSend = ai.confidence >= threshold && leadData.inServiceArea;
 
   db.prepare(`
     INSERT INTO leads (id, source, status, confidence, received_at, raw_message,
@@ -113,7 +109,7 @@ leads.post("/ingest/form", async (c) => {
       generated_response, final_response, confidence_reason)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
-    id, "Website Form", autoSend ? "auto-sent" : (ai.confidence < 50 ? "flagged" : "review"),
+    id, "Website Form", autoSend ? "auto-sent" : (ai.confidence < parseInt(getSetting('scoring.review_threshold','50'),10) ? "flagged" : "review"),
     ai.confidence, now, rawMessage,
     leadData.name, leadData.phone, leadData.email, "", "", "OH", body.zip,
     leadData.scope, leadData.serviceType, leadData.urgency, leadData.inServiceArea ? 1 : 0,
@@ -166,7 +162,8 @@ leads.post("/ingest/email", async (c) => {
   };
 
   const ai = await generateResponse(leadData, body.body);
-  const autoSend = ai.confidence >= 80;
+  const threshold = parseInt(getSetting('scoring.auto_send_threshold', '80'), 10);
+  const autoSend = ai.confidence >= threshold;
 
   db.prepare(`
     INSERT INTO leads (id, source, status, confidence, received_at, raw_message,
@@ -175,7 +172,7 @@ leads.post("/ingest/email", async (c) => {
       generated_response, final_response, confidence_reason)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
-    id, source, autoSend ? "auto-sent" : (ai.confidence < 50 ? "flagged" : "review"),
+    id, source, autoSend ? "auto-sent" : (ai.confidence < parseInt(getSetting('scoring.review_threshold','50'),10) ? "flagged" : "review"),
     ai.confidence, now, body.body,
     leadData.name, leadData.phone, leadData.email, "", parsedCity, "OH", parsedZip,
     leadData.scope, leadData.serviceType, leadData.urgency, leadData.inServiceArea ? 1 : 0,

@@ -1,4 +1,4 @@
-import db from "../db.js";
+import db, { getSetting } from "../db.js";
 
 interface LeadData {
   name: string;
@@ -37,7 +37,7 @@ function scoreConfidence(lead: LeadData, rawMessage: string): { score: number; r
   const faqRows = db.prepare("SELECT keywords FROM faq").all() as { keywords: string }[];
 
   // Emergency escalation — always force review regardless of confidence
-  const emergencyWords = ["emergency", "fallen", "house", "lawsuit", "complaint", "bad experience", "dangerous", "collapse", "on my roof", "hit the roof", "through the roof"];
+  const emergencyWords = getSetting("rules.emergency_keywords", "emergency,fallen,house,lawsuit,complaint,dangerous,collapse,on my roof").split(",").map(k => k.trim());
   if (emergencyWords.some(w => msg.includes(w))) {
     return { score: 58, reason: "Flagged keyword detected (emergency/risk). Routed to human review." };
   }
@@ -65,8 +65,10 @@ function scoreConfidence(lead: LeadData, rawMessage: string): { score: number; r
   const serviceBonus  = knownServices.some(s => searchText.includes(s)) ? 1 : 0;
   const effectiveMatchCount = matchCount + serviceBonus;
 
-  const fieldScore = [lead.name, lead.phone, lead.email, lead.city || lead.zip].filter(Boolean).length * 5; // 0-20
-  const faqScore   = Math.min(effectiveMatchCount * 30, 90); // 0-90
+  const fieldPts   = parseInt(getSetting("scoring.field_score_per_item", "5"), 10);
+  const faqPts     = parseInt(getSetting("scoring.faq_score_per_match", "30"), 10);
+  const fieldScore = [lead.name, lead.phone, lead.email, lead.city || lead.zip].filter(Boolean).length * fieldPts;
+  const faqScore   = Math.min(effectiveMatchCount * faqPts, 90);
   const score      = Math.min(Math.max(fieldScore + faqScore, 30), 97);
 
   const reason =
@@ -94,7 +96,9 @@ async function callOpenRouter(lead: LeadData, rawMessage: string): Promise<strin
   const officePhone = isColumbus ? "614-526-2266" : "216-245-8908";
   const officeName  = isColumbus ? "Columbus" : "Cleveland";
 
-  const systemPrompt = `You are a warm, knowledgeable customer service representative for Premier Tree Specialists — an Ohio tree care company with ISA-certified arborists and 80+ years of combined experience. You have two office locations:
+  // Use DB-stored prompt if set, otherwise fall back to the inline default
+  const dbSystemPrompt = getSetting("ai.system_prompt", "");
+  const defaultSystemPrompt = `You are a warm, knowledgeable customer service representative for Premier Tree Specialists — an Ohio tree care company with ISA-certified arborists and 80+ years of combined experience. You have two office locations:
 - Cleveland office: 216-245-8908
 - Columbus office: 614-526-2266
 
@@ -111,6 +115,7 @@ COMPANY RULES YOU MUST FOLLOW:
 
 FAQ KNOWLEDGE BASE (use this to inform your response):
 ${faqContext}`;
+  const systemPrompt = dbSystemPrompt || defaultSystemPrompt;
 
   const userPrompt = `A new customer enquiry has come in. Write a reply to send to this customer.
 
@@ -141,9 +146,9 @@ Write the reply now. Start with "Hi ${lead.name.split(" ")[0]}!" and end with th
         "X-Title": "Premier Tree Specialists Lead Dashboard",
       },
       body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4-20250514",
-        max_tokens: 400,
-        temperature: 0.4,
+        model: getSetting("ai.model", "anthropic/claude-sonnet-4-20250514"),
+        max_tokens: parseInt(getSetting("ai.max_tokens", "400"), 10),
+        temperature: parseFloat(getSetting("ai.temperature", "0.4")),
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user",   content: userPrompt   },
