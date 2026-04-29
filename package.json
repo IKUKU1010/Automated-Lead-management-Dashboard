@@ -1,0 +1,25 @@
+{
+  "name": "premier-tree-dashboard",
+  "version": "1.0.0",
+  "description": "Automated Lead Intake Dashboard for Premier Tree Specialists",
+  "type": "module",
+  "scripts": {
+    "dev":         "tsx watch src/index.ts",
+    "build":       "tsc",
+    "start":       "node dist/index.js",
+    "postinstall": "npm rebuild better-sqlite3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.12.0",
+    "better-sqlite3":    "^9.4.3",
+    "dotenv":            "^16.4.5",
+    "hono":              "^4.4.0",
+    "nanoid":            "^5.0.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node":           "^20.14.0",
+    "tsx":                   "^4.15.7",
+    "typescript":            "^5.4.5"
+  }
+}

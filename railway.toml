@@ -1,0 +1,14 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && npm rebuild better-sqlite3 && npm run build && cd frontend && npm install && npm run build"
+
+[deploy]
+startCommand = "npm run start"
+restartPolicyType = "ALWAYS"
+
+[healthcheck]
+path = "/api/health"
+timeout = 30
+initialDelaySeconds = 10
+periodSeconds = 30
+failureThreshold = 3

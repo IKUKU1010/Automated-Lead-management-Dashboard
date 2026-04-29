@@ -1,0 +1,31 @@
+# ─── Secrets — never commit ──────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# .env.railway is a template (no real values) — safe to commit
+# If you ever add real values to it, add it here instead:
+# .env.railway
+
+# ─── Build output ────────────────────────────────────────────────────────────
+# dist/ is compiled TypeScript — built by Railway's buildCommand
+dist/
+
+# public/ is the Vite-built frontend — also built by Railway's buildCommand
+# (cd frontend && npm run build outputs to ../public)
+public/
+
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+
+# ─── Database (local dev only — Railway uses /data volume) ───────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ─── OS / editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
