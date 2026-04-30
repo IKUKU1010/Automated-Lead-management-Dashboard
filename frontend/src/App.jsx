@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Settings from "./Settings.jsx";
+import { TourLanding, TourOverlay, ReplayTourButton } from "./Tour.jsx";
 
 // ─── MOCK DATA (fallback for local dev without backend) ───────────────────────
 
@@ -599,6 +600,8 @@ export default function App() {
   const [loading, setLoading]       = useState(true);
   const [simIdx, setSimIdx]         = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const tourDone = localStorage.getItem("pts_tour_done") === "1";
+  const [tourPhase, setTourPhase] = useState(tourDone ? "done" : "landing"); // landing | tour | done
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -774,6 +777,17 @@ export default function App() {
     <div className="min-h-screen text-slate-100 relative" style={{ background: "#060f0a", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&display=swap" rel="stylesheet" />
 
+      {/* ── TOUR ── */}
+      {tourPhase === "landing" && (
+        <TourLanding
+          onStartTour={() => setTourPhase("tour")}
+          onSkip={() => { localStorage.setItem("pts_tour_done","1"); setTourPhase("done"); }}
+        />
+      )}
+      {tourPhase === "tour" && (
+        <TourOverlay onFinish={() => setTourPhase("done")} />
+      )}
+
       {/* Forest background — fixed, behind everything */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
         {/* Deep canopy gradient */}
@@ -878,7 +892,7 @@ export default function App() {
           </div>
 
           {/* Simulate button — block button with hover preview tooltip */}
-          <div className="relative group/sim">
+          <div id="tour-simulate" className="relative group/sim">
             <button onClick={handleSimulate} disabled={simulating}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all
                 ${simulating
@@ -912,7 +926,7 @@ export default function App() {
           </div>
 
           {/* Settings button */}
-          <button onClick={() => setShowSettings(s => !s)}
+          <button id="tour-settings" onClick={() => setShowSettings(s => !s)}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all
               ${showSettings
                 ? "border-emerald-500/60 text-emerald-300"
@@ -920,6 +934,9 @@ export default function App() {
             style={{ background: showSettings ? "#0d2a1e" : "#0a1a12" }}>
             ⚙️ Settings
           </button>
+
+          {/* Replay tour */}
+          <ReplayTourButton onClick={() => setTourPhase("landing")} />
 
           {/* Live indicator */}
           <div className="flex items-center gap-1.5">
@@ -937,10 +954,10 @@ export default function App() {
         <div>
 
         {/* Stats */}
-        <StatsBar leads={leads} />
+        <div id="tour-stats"><StatsBar leads={leads} /></div>
 
         {/* Filter tabs + legend */}
-        <div className="flex items-center gap-2 mb-5 flex-wrap">
+        <div id="tour-filters" className="flex items-center gap-2 mb-5 flex-wrap">
           {FILTERS.map(f => (
             <button key={f.key} onClick={() => setFilter(f.key)} title={f.tip}
               className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2
@@ -975,7 +992,7 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
           {/* Lead list — no max-height, grows with content */}
-          <div className="lg:col-span-2 flex flex-col gap-2">
+          <div id="tour-leadlist" className="lg:col-span-2 flex flex-col gap-2">
             {filtered.length === 0 ? (
               <div className="text-center text-slate-600 py-16 text-sm">No leads in this category</div>
             ) : (
@@ -986,7 +1003,7 @@ export default function App() {
           </div>
 
           {/* Detail panel — sticky to viewport, scrolls internally */}
-          <div className="lg:col-span-3 sticky top-[72px]" style={{ height: "calc(100vh - 96px)" }}>
+          <div id="tour-detail" className="lg:col-span-3 sticky top-[72px]" style={{ height: "calc(100vh - 96px)" }}>
             {selected
               ? <LeadDetail
                   lead={selected}
