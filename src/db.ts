@@ -4,15 +4,30 @@ import fs from "fs";
 
 const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), "leads.db");
 
-// Ensure the directory exists before opening — required when DATABASE_PATH
-// points to a Railway volume mount (e.g. /data/leads.db) that may not yet
-// have been initialised on first boot.
+// Only create the directory when it doesn't exist AND we're not being asked to
+// create a system-level path (like /data) on a machine where we lack permission.
+// On Railway the /data volume is pre-created by Railway itself, so mkdirSync is
+// only needed for nested subdirectories. Locally the DB lives in cwd which always exists.
 const DB_DIR = path.dirname(DB_PATH);
 if (!fs.existsSync(DB_DIR)) {
-  fs.mkdirSync(DB_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+  } catch (err: any) {
+    if (err.code === "EACCES") {
+      console.warn(`⚠️  Cannot create database directory at ${DB_DIR} (permission denied).`);
+      console.warn(`   Set DATABASE_PATH in your .env to a writable path, e.g. DATABASE_PATH=./leads.db`);
+      console.warn(`   Falling back to: ${path.join(process.cwd(), "leads.db")}`);
+      // Re-assign to local fallback — can't mutate const so we handle below
+    } else {
+      throw err;
+    }
+  }
 }
 
-const db = new Database(DB_PATH);
+// Use writable path — if DB_DIR wasn't creatable, fall back to cwd
+const RESOLVED_DB_PATH = fs.existsSync(DB_DIR) ? DB_PATH : path.join(process.cwd(), "leads.db");
+
+const db = new Database(RESOLVED_DB_PATH);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS leads (

@@ -41,12 +41,12 @@ function useSettings() {
 
 function Card({ title, subtitle, children }) {
   return (
-    <div className="rounded-2xl border border-[#1e3a2a]/70 overflow-hidden mb-5"
-      style={{ background: "#0a1a12" }}>
-      <div className="px-6 py-4 border-b border-[#1e3a2a]/50"
-        style={{ background: "#0d2018" }}>
-        <div className="text-sm font-bold text-slate-200">{title}</div>
-        {subtitle && <div className="text-xs text-slate-500 mt-0.5">{subtitle}</div>}
+    <div className="rounded-2xl border border-gray-200 overflow-hidden mb-5"
+      className="bg-white">
+      <div className="px-6 py-4 border-b border-gray-200"
+        style={{ background: "#f9fafb" }}>
+        <div className="text-sm font-bold text-gray-800">{title}</div>
+        {subtitle && <div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>}
       </div>
       <div className="px-6 py-5 space-y-4">{children}</div>
     </div>
@@ -56,8 +56,8 @@ function Card({ title, subtitle, children }) {
 function Field({ label, hint, children }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-slate-400 mb-1">{label}</label>
-      {hint && <div className="text-[11px] text-slate-600 mb-1.5 leading-relaxed">{hint}</div>}
+      <label className="block text-xs font-semibold text-gray-500 mb-1">{label}</label>
+      {hint && <div className="text-[11px] text-gray-400 mb-1.5 leading-relaxed">{hint}</div>}
       {children}
     </div>
   );
@@ -70,8 +70,8 @@ function Input({ value, onChange, type = "text", placeholder, mono }) {
       value={value ?? ""}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`w-full px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-colors ${mono ? "font-mono text-xs" : ""}`}
-      style={{ background: "#0d2018" }}
+      className={`w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:border-emerald-500/50 transition-colors ${mono ? "font-mono text-xs" : ""}`}
+      style={{ background: "#f9fafb" }}
     />
   );
 }
@@ -83,8 +83,8 @@ function Textarea({ value, onChange, rows = 4, mono, placeholder }) {
       onChange={e => onChange(e.target.value)}
       rows={rows}
       placeholder={placeholder}
-      className={`w-full px-3 py-2.5 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-y transition-colors leading-relaxed ${mono ? "font-mono text-xs" : ""}`}
-      style={{ background: "#0d2018" }}
+      className={`w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:border-emerald-500/50 resize-y transition-colors leading-relaxed ${mono ? "font-mono text-xs" : ""}`}
+      style={{ background: "#f9fafb" }}
     />
   );
 }
@@ -95,12 +95,12 @@ function Toggle({ value, onChange, label }) {
     <label className="flex items-center gap-3 cursor-pointer group">
       <div onClick={() => onChange(on ? "false" : "true")}
         className={`relative w-11 h-6 rounded-full border transition-all flex-shrink-0
-          ${on ? "border-emerald-500/60" : "border-[#1e3a2a]/60"}`}
+          ${on ? "border-emerald-500/60" : "border-gray-200"}`}
         style={{ background: on ? "#0d4a28" : "#0a1810" }}>
         <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all shadow
-          ${on ? "left-[22px] bg-emerald-400" : "left-0.5 bg-slate-600"}`} />
+          ${on ? "left-[22px] bg-emerald-400" : "left-0.5 bg-gray-400"}`} />
       </div>
-      <span className={`text-sm font-medium ${on ? "text-slate-200" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm font-medium ${on ? "text-gray-800" : "text-gray-400"}`}>{label}</span>
     </label>
   );
 }
@@ -108,10 +108,10 @@ function Toggle({ value, onChange, label }) {
 function Select({ value, onChange, options }) {
   return (
     <select value={value ?? ""} onChange={e => onChange(e.target.value)}
-      className="w-full px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-colors"
-      style={{ background: "#0d2018" }}>
+      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:border-emerald-500/50 transition-colors"
+      style={{ background: "#f9fafb" }}>
       {options.map(o => (
-        <option key={o.value} value={o.value} style={{ background: "#0d2018" }}>{o.label}</option>
+        <option key={o.value} value={o.value} style={{ background: "#f9fafb" }}>{o.label}</option>
       ))}
     </select>
   );
@@ -122,11 +122,11 @@ function SaveBar({ saving, saved, onSave }) {
     <div className="flex items-center justify-between py-3 px-1">
       {saved
         ? <span className="text-xs text-emerald-400 font-semibold">✓ Saved</span>
-        : <span className="text-xs text-slate-600">Unsaved changes</span>}
+        : <span className="text-xs text-gray-400">Unsaved changes</span>}
       <button onClick={onSave} disabled={saving}
         className={`px-5 py-2 rounded-xl text-sm font-bold border transition-all
-          ${saving ? "opacity-50 cursor-not-allowed border-slate-700/40 text-slate-500" : "border-emerald-500/50 text-emerald-200 hover:border-emerald-400"}`}
-        style={{ background: saving ? "transparent" : "#0d3a22" }}>
+          ${saving ? "opacity-50 cursor-not-allowed border-slate-700/40 text-gray-400" : "border-emerald-500/50 text-emerald-700 hover:border-emerald-400"}`}
+        style={{ background: saving ? "transparent" : "#f0fdf4" }}>
         {saving ? "Saving…" : "Save changes"}
       </button>
     </div>
@@ -179,14 +179,14 @@ function InboundSettings({ s, set }) {
           { key: "website_form",  label: "Website Contact Form",     icon: "🟣", desc: "Submissions from premiertreesllc.com" },
           { key: "answerforce",   label: "AnswerForce",              icon: "🟡", desc: "After-hours call transcripts emailed by AnswerForce" },
         ].map(ch => (
-          <div key={ch.key} className="p-4 rounded-xl border border-[#1e3a2a]/50 space-y-3"
-            style={{ background: "#0d2018" }}>
+          <div key={ch.key} className="p-4 rounded-xl border border-gray-200 space-y-3"
+            style={{ background: "#f9fafb" }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span>{ch.icon}</span>
                 <div>
-                  <div className="text-sm font-semibold text-slate-200">{ch.label}</div>
-                  <div className="text-[11px] text-slate-500">{ch.desc}</div>
+                  <div className="text-sm font-semibold text-gray-800">{ch.label}</div>
+                  <div className="text-[11px] text-gray-400">{ch.desc}</div>
                 </div>
               </div>
               <Toggle
@@ -219,11 +219,11 @@ function BusinessRules({ s, set }) {
     <Card title="Business Rules" subtitle="Oak season, service area, emergency escalation — all editable">
 
       {/* Oak season */}
-      <div className="p-4 rounded-xl border border-amber-500/20 space-y-3" style={{ background: "#1a1000" }}>
+      <div className="p-4 rounded-xl border border-amber-500/20 space-y-3" className="bg-amber-50">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm font-semibold text-amber-300">🌳 Oak Season Restriction</div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Warn customers and delay oak trim bookings during wilt risk months</div>
+            <div className="text-sm font-semibold text-amber-600">🌳 Oak Season Restriction</div>
+            <div className="text-[11px] text-gray-400 mt-0.5">Warn customers and delay oak trim bookings during wilt risk months</div>
           </div>
           <Toggle value={s["rules.oak_trim_restricted"]} onChange={v => set("rules.oak_trim_restricted", v)} label="" />
         </div>
@@ -245,10 +245,10 @@ function BusinessRules({ s, set }) {
       </div>
 
       {/* Emergency keywords */}
-      <div className="p-4 rounded-xl border border-red-500/20 space-y-3" style={{ background: "#1a0808" }}>
+      <div className="p-4 rounded-xl border border-red-500/20 space-y-3" className="bg-red-50">
         <div>
-          <div className="text-sm font-semibold text-red-300">⚠️ Emergency Escalation Keywords</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Leads containing any of these words are always routed to review — regardless of confidence score.</div>
+          <div className="text-sm font-semibold text-red-600">⚠️ Emergency Escalation Keywords</div>
+          <div className="text-[11px] text-gray-400 mt-0.5">Leads containing any of these words are always routed to review — regardless of confidence score.</div>
         </div>
         <Field label="Keywords (comma-separated)" hint="Add or remove words. Matching is case-insensitive.">
           <Textarea value={s["rules.emergency_keywords"]} onChange={v => set("rules.emergency_keywords", v)} rows={3} mono />
@@ -256,10 +256,10 @@ function BusinessRules({ s, set }) {
       </div>
 
       {/* Service area */}
-      <div className="p-4 rounded-xl border border-sky-500/20 space-y-3" style={{ background: "#08121a" }}>
+      <div className="p-4 rounded-xl border border-sky-500/20 space-y-3" className="bg-sky-50">
         <div>
-          <div className="text-sm font-semibold text-sky-300">📍 Service Area</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Leads from zip codes not matching these prefixes are flagged as out-of-area.</div>
+          <div className="text-sm font-semibold text-sky-600">📍 Service Area</div>
+          <div className="text-[11px] text-gray-400 mt-0.5">Leads from zip codes not matching these prefixes are flagged as out-of-area.</div>
         </div>
         <Field label="Zip code prefixes (comma-separated, first 3 digits)"
           hint="E.g. 440 covers all of 44000–44099 (Cleveland metro). Add or remove prefixes to expand or shrink your coverage.">
@@ -298,9 +298,9 @@ function AISettings({ s, set }) {
         <Textarea value={s["ai.extraction_prompt"]} onChange={v => set("ai.extraction_prompt", v)} rows={4} />
       </Field>
 
-      <div className="p-3 rounded-lg border border-sky-500/15 text-[11px] text-slate-500 leading-relaxed"
-        style={{ background: "#08121a" }}>
-        💡 The system prompt supports these variables: <span className="text-slate-400 font-mono">{`{faq_context}`}</span> (FAQ knowledge base), <span className="text-slate-400 font-mono">{`{office_phone}`}</span> (correct office number for customer's location), <span className="text-slate-400 font-mono">{`{office_name}`}</span>.
+      <div className="p-3 rounded-lg border border-sky-500/15 text-[11px] text-gray-400 leading-relaxed"
+        className="bg-sky-50">
+        💡 The system prompt supports these variables: <span className="text-gray-500 font-mono">{`{faq_context}`}</span> (FAQ knowledge base), <span className="text-gray-500 font-mono">{`{office_phone}`}</span> (correct office number for customer's location), <span className="text-gray-500 font-mono">{`{office_name}`}</span>.
       </div>
     </Card>
   );
@@ -319,14 +319,14 @@ function ScoringSettings({ s, set }) {
           <Input value={s["scoring.faq_score_per_match"]} onChange={v => set("scoring.faq_score_per_match", v)} type="number" />
         </Field>
       </div>
-      <div className="p-4 rounded-xl border border-[#1e3a2a]/50 text-xs text-slate-400 leading-relaxed space-y-1.5"
-        style={{ background: "#0d2018" }}>
-        <div className="font-semibold text-slate-300 mb-2">How scoring works</div>
-        <div>📋 <span className="text-slate-300">Field score</span> — {s["scoring.field_score_per_item"] || 5} pts × up to 4 contact fields = max {(s["scoring.field_score_per_item"] || 5) * 4} pts</div>
-        <div>🔍 <span className="text-slate-300">FAQ score</span> — {s["scoring.faq_score_per_match"] || 30} pts × number of FAQ categories matched (capped at 90)</div>
-        <div>⚡ <span className="text-slate-300">Auto-send</span> — score ≥ {s["outreach.auto_send_threshold"] || 80}% and in service area</div>
-        <div>◐ <span className="text-slate-300">Review queue</span> — score between {s["scoring.review_threshold"] || 50}% and {s["outreach.auto_send_threshold"] || 80}%</div>
-        <div>⊗ <span className="text-slate-300">Flagged</span> — score below {s["scoring.review_threshold"] || 50}%, out of area, or emergency keyword hit</div>
+      <div className="p-4 rounded-xl border border-gray-200 text-xs text-gray-500 leading-relaxed space-y-1.5"
+        style={{ background: "#f9fafb" }}>
+        <div className="font-semibold text-gray-700 mb-2">How scoring works</div>
+        <div>📋 <span className="text-gray-700">Field score</span> — {s["scoring.field_score_per_item"] || 5} pts × up to 4 contact fields = max {(s["scoring.field_score_per_item"] || 5) * 4} pts</div>
+        <div>🔍 <span className="text-gray-700">FAQ score</span> — {s["scoring.faq_score_per_match"] || 30} pts × number of FAQ categories matched (capped at 90)</div>
+        <div>⚡ <span className="text-gray-700">Auto-send</span> — score ≥ {s["outreach.auto_send_threshold"] || 80}% and in service area</div>
+        <div>◐ <span className="text-gray-700">Review queue</span> — score between {s["scoring.review_threshold"] || 50}% and {s["outreach.auto_send_threshold"] || 80}%</div>
+        <div>⊗ <span className="text-gray-700">Flagged</span> — score below {s["scoring.review_threshold"] || 50}%, out of area, or emergency keyword hit</div>
       </div>
     </Card>
   );
@@ -349,16 +349,16 @@ const CATEGORY_OPTIONS = [
 ];
 
 const CATEGORY_COLOUR = {
-  oak_season:   "text-amber-300  border-amber-500/20  bg-amber-500/8",
-  service_area: "text-sky-300    border-sky-500/20    bg-sky-500/8",
-  emergency:    "text-red-300    border-red-500/20    bg-red-500/8",
+  oak_season:   "text-amber-600  border-amber-500/20  bg-amber-500/8",
+  service_area: "text-sky-600    border-sky-500/20    bg-sky-500/8",
+  emergency:    "text-red-600    border-red-500/20    bg-red-500/8",
   credentials:  "text-violet-300 border-violet-500/20 bg-violet-500/8",
-  pricing:      "text-emerald-300 border-emerald-500/20 bg-emerald-500/8",
+  pricing:      "text-emerald-600 border-emerald-500/20 bg-emerald-500/8",
   scheduling:   "text-blue-300   border-blue-500/20   bg-blue-500/8",
   stump:        "text-lime-300   border-lime-500/20   bg-lime-500/8",
   plant_health: "text-teal-300   border-teal-500/20   bg-teal-500/8",
   columbus:     "text-orange-300 border-orange-500/20 bg-orange-500/8",
-  custom:       "text-slate-300  border-slate-500/20  bg-slate-500/8",
+  custom:       "text-gray-700  border-slate-500/20  bg-slate-500/8",
 };
 
 function FaqEditor({ entry, onSave, onDelete, isNew, onCancel }) {
@@ -378,10 +378,10 @@ function FaqEditor({ entry, onSave, onDelete, isNew, onCancel }) {
       <div className="grid grid-cols-2 gap-3">
         <Field label="Category">
           <select value={draft.category} onChange={e => set("category", e.target.value)}
-            className="w-full px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
-            style={{ background: "#0d2018" }}>
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:border-emerald-500/50"
+            style={{ background: "#f9fafb" }}>
             {CATEGORY_OPTIONS.map(o => (
-              <option key={o.value} value={o.value} style={{ background: "#0d2018" }}>{o.label}</option>
+              <option key={o.value} value={o.value} style={{ background: "#f9fafb" }}>{o.label}</option>
             ))}
           </select>
         </Field>
@@ -397,13 +397,13 @@ function FaqEditor({ entry, onSave, onDelete, isNew, onCancel }) {
       </Field>
       <div className="flex gap-2 pt-1">
         <button onClick={handleSave} disabled={saving}
-          className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-200 transition-all hover:border-emerald-400"
+          className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-700 transition-all hover:border-emerald-400"
           style={{ background: "#0d3a22" }}>
           {saving ? "Saving…" : isNew ? "Add entry" : "Save changes"}
         </button>
         {isNew && (
           <button onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-700/40 text-slate-400 hover:text-slate-300 transition-colors">
+            className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-700/40 text-gray-500 hover:text-gray-700 transition-colors">
             Cancel
           </button>
         )}
@@ -500,7 +500,7 @@ function FAQSettings() {
       {/* Toast */}
       {toast && (
         <div className={`mb-4 px-4 py-2.5 rounded-xl text-xs font-semibold border
-          ${toast.ok ? "bg-emerald-900/60 border-emerald-500/30 text-emerald-200" : "bg-red-900/60 border-red-500/30 text-red-200"}`}>
+          ${toast.ok ? "bg-emerald-900/60 border-emerald-500/30 text-emerald-700" : "bg-red-900/60 border-red-500/30 text-red-200"}`}>
           {toast.ok ? "✓" : "✗"} {toast.msg}
         </div>
       )}
@@ -510,23 +510,23 @@ function FAQSettings() {
         subtitle="These entries power the AI context and confidence scoring. Each category has a keyword list — leads matching those keywords get scored against this answer.">
 
         {/* Explanation banner */}
-        <div className="p-3 rounded-lg border border-sky-500/15 text-[11px] text-slate-400 leading-relaxed space-y-1"
-          style={{ background: "#08121a" }}>
-          <div className="font-semibold text-slate-300 mb-1">How the FAQ affects the system</div>
-          <div>📊 <span className="text-slate-300">Confidence scoring</span> — each time a lead message matches a category's keywords, the score increases by the FAQ match points (currently {30} per match).</div>
-          <div>🤖 <span className="text-slate-300">AI responses</span> — the full question and answer for every matched category is injected into the AI system prompt as context before generating a reply.</div>
-          <div>✏️ <span className="text-slate-300">Editing</span> — changes to answers take effect immediately on the next inbound lead. Changes to keywords affect scoring from the next lead onward.</div>
+        <div className="p-3 rounded-lg border border-sky-500/15 text-[11px] text-gray-500 leading-relaxed space-y-1"
+          className="bg-sky-50">
+          <div className="font-semibold text-gray-700 mb-1">How the FAQ affects the system</div>
+          <div>📊 <span className="text-gray-700">Confidence scoring</span> — each time a lead message matches a category's keywords, the score increases by the FAQ match points (currently {30} per match).</div>
+          <div>🤖 <span className="text-gray-700">AI responses</span> — the full question and answer for every matched category is injected into the AI system prompt as context before generating a reply.</div>
+          <div>✏️ <span className="text-gray-700">Editing</span> — changes to answers take effect immediately on the next inbound lead. Changes to keywords affect scoring from the next lead onward.</div>
         </div>
 
         {/* Search + add */}
         <div className="flex gap-3 items-center">
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search by category, question, or keyword…"
-            className="flex-1 px-3 py-2 rounded-xl border border-[#1e3a2a]/60 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
-            style={{ background: "#0d2018" }} />
+            className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:border-emerald-500/50"
+            style={{ background: "#f9fafb" }} />
           <button onClick={() => { setAdding(true); setEditing(null); }}
             disabled={adding}
-            className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-200 hover:border-emerald-400 transition-all flex-shrink-0"
+            className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/50 text-emerald-700 hover:border-emerald-400 transition-all flex-shrink-0"
             style={{ background: "#0d3a22" }}>
             + Add entry
           </button>
@@ -545,9 +545,9 @@ function FAQSettings() {
 
         {/* Entry list */}
         {loading ? (
-          <div className="text-center text-slate-600 text-sm py-8 animate-pulse">Loading…</div>
+          <div className="text-center text-gray-400 text-sm py-8 animate-pulse">Loading…</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center text-slate-600 text-sm py-8">No entries found</div>
+          <div className="text-center text-gray-400 text-sm py-8">No entries found</div>
         ) : (
           <div className="space-y-2">
             {filtered.map(entry => {
@@ -567,8 +567,8 @@ function FAQSettings() {
                   ) : (
                     <div
                       onClick={() => { setEditing(entry.id); setAdding(false); }}
-                      className="group rounded-xl border border-[#1e3a2a]/50 p-4 cursor-pointer hover:border-[#2d5a3a]/60 transition-all"
-                      style={{ background: "#0d2018" }}>
+                      className="group rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-[#2d5a3a]/60 transition-all"
+                      style={{ background: "#f9fafb" }}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -576,15 +576,15 @@ function FAQSettings() {
                               {CATEGORY_OPTIONS.find(o => o.value === entry.category)?.label || entry.category}
                             </span>
                             {entry.keywords && (
-                              <span className="text-[10px] text-slate-600 font-mono truncate max-w-[240px]">
+                              <span className="text-[10px] text-gray-400 font-mono truncate max-w-[240px]">
                                 {entry.keywords}
                               </span>
                             )}
                           </div>
-                          <div className="text-sm font-semibold text-slate-200 mb-1">{entry.question}</div>
-                          <div className="text-xs text-slate-500 leading-relaxed line-clamp-2">{entry.answer}</div>
+                          <div className="text-sm font-semibold text-gray-800 mb-1">{entry.question}</div>
+                          <div className="text-xs text-gray-400 leading-relaxed line-clamp-2">{entry.answer}</div>
                         </div>
-                        <span className="text-[11px] text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0 mt-0.5">
+                        <span className="text-[11px] text-gray-400 group-hover:text-gray-500 transition-colors flex-shrink-0 mt-0.5">
                           Edit ↗
                         </span>
                       </div>
@@ -622,7 +622,7 @@ export default function Settings({ onBack }) {
   ];
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64 text-slate-500 text-sm">
+    <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
       <span className="animate-pulse">Loading settings…</span>
     </div>
   );
@@ -632,18 +632,18 @@ export default function Settings({ onBack }) {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 mb-3 transition-colors">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 mb-3 transition-colors">
             ← Back to dashboard
           </button>
           <h1 className="text-2xl font-black text-slate-100 tracking-tight">Settings</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Configure business rules, AI prompts, and outreach behaviour</p>
+          <p className="text-sm text-gray-400 mt-0.5">Configure business rules, AI prompts, and outreach behaviour</p>
         </div>
         <div className="flex items-center gap-3">
           {saved && <span className="text-xs text-emerald-400 font-semibold">✓ All changes saved</span>}
           <button onClick={handleSave} disabled={saving}
             className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all
-              ${saving ? "opacity-50 cursor-not-allowed border-slate-700/40 text-slate-500" : "border-emerald-500/50 text-emerald-200 hover:border-emerald-400"}`}
-            style={{ background: saving ? "transparent" : "#0d3a22" }}>
+              ${saving ? "opacity-50 cursor-not-allowed border-slate-700/40 text-gray-400" : "border-emerald-500/50 text-emerald-700 hover:border-emerald-400"}`}
+            style={{ background: saving ? "transparent" : "#f0fdf4" }}>
             {saving ? "Saving…" : "Save all changes"}
           </button>
         </div>
@@ -655,9 +655,9 @@ export default function Settings({ onBack }) {
           <button key={sec.key} onClick={() => setActiveSection(sec.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all
               ${activeSection === sec.key
-                ? "border-emerald-500/60 text-emerald-300"
-                : "border-[#1a3a22]/60 text-slate-500 hover:text-slate-300 hover:border-[#2d5a3a]/60"}`}
-            style={{ background: activeSection === sec.key ? "#0d2a1e" : "#0a1a12" }}>
+                ? "border-emerald-500/60 text-emerald-600"
+                : "border-[#1a3a22]/60 text-gray-400 hover:text-gray-700 hover:border-[#2d5a3a]/60"}`}
+            style={{ background: activeSection === sec.key ? "#f0fdf4" : "#ffffff" }}>
             <span>{sec.icon}</span> {sec.label}
           </button>
         ))}
